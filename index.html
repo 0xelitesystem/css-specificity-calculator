@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Specificity Calculator</title>
+<meta name="description" content="Type any CSS selector and get its specificity as (a,b,c) with a plain-English breakdown. Compare two selectors to see which one wins. Runs entirely in your browser.">
+<link rel="canonical" href="https://0xelitesystem.github.io/css-specificity-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CSS Specificity Calculator">
+<meta property="og:description" content="Type any CSS selector and get its specificity as (a,b,c) with a plain-English breakdown. Compare two selectors to see which one wins.">
+<meta property="og:url" content="https://0xelitesystem.github.io/css-specificity-calculator/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CSS Specificity Calculator",
+  "description": "Type any CSS selector and get its specificity as (a,b,c) with a plain-English breakdown. Compare two selectors to see which one wins.",
+  "url": "https://0xelitesystem.github.io/css-specificity-calculator/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "0xelitesystem" }
+}
+</script>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #ffffff;
+  --ink: #0a1d1e;
+  --ink-soft: #2c4a4c;
+  --rule: #c8d4d3;
+  --teal: #0f5c60;
+  --teal-deep: #0a4548;
+  --gold: #b07d2a;
+  --gold-deep: #8a611f;
+  --ok: #1a5c2e;
+  --warn: #8a5a00;
+  --err: #8b1a1a;
+  --code-bg: #f0ebe1;
+  --a-col: #b03d8f;
+  --b-col: #2660a8;
+  --c-col: #3a6b1f;
+}
+[data-theme="dark"] {
+  --bg: #0c1c1d;
+  --surface: #14292a;
+  --ink: #e8ebe6;
+  --ink-soft: #b0c0bd;
+  --rule: #2a4042;
+  --teal: #4ab4ba;
+  --teal-deep: #6dc8ce;
+  --gold: #d4a155;
+  --gold-deep: #e6b876;
+  --ok: #6dd380;
+  --warn: #d4a155;
+  --err: #e88080;
+  --code-bg: #0a1718;
+  --a-col: #d97ab8;
+  --b-col: #6da8e0;
+  --c-col: #8ec870;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  line-height: 1.55;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid var(--teal);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--teal);
+}
+.tag {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  color: var(--gold-deep);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+[data-theme="dark"] .tag { color: var(--gold); }
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.theme-btn:hover { border-color: var(--teal); color: var(--teal); }
+.lede {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.75rem;
+  max-width: 62ch;
+}
+.input-box {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1.25rem;
+  margin-bottom: 1.75rem;
+  border-radius: 3px;
+}
+label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+input[type="text"] {
+  width: 100%;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.9rem;
+  border-radius: 2px;
+}
+input[type="text"]:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.tab {
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-radius: 2px;
+}
+.tab.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--surface);
+  font-weight: 600;
+}
+[data-theme="dark"] .tab.active { color: var(--bg); }
+.presets {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.preset {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 2px;
+}
+.preset:hover { border-color: var(--teal); color: var(--teal); }
+.preset-label {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
+}
+.privacy-note {
+  font-size: 0.78rem;
+  color: var(--gold-deep);
+  margin-top: 0.85rem;
+}
+[data-theme="dark"] .privacy-note { color: var(--gold); }
+.results { display: none; }
+.results.show { display: block; }
+.section {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-radius: 3px;
+}
+.section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.85rem;
+}
+.score {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.score-cell {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.85rem 0.5rem;
+}
+.score-cell .num {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.score-cell .lbl {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  margin-top: 0.4rem;
+}
+.cell-a .num { color: var(--a-col); }
+.cell-b .num { color: var(--b-col); }
+.cell-c .num { color: var(--c-col); }
+.tuple {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 1.05rem;
+  margin-top: 1rem;
+  color: var(--ink);
+}
+.breakdown {
+  margin-top: 1rem;
+  font-size: 0.88rem;
+}
+.contrib {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+.contrib .tok { color: var(--ink); word-break: break-all; }
+.contrib .why { color: var(--ink-soft); font-family: ui-serif, Georgia, serif; }
+.badge {
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  color: #fff;
+  margin-right: 0.4rem;
+}
+.badge-a { background: var(--a-col); }
+.badge-b { background: var(--b-col); }
+.badge-c { background: var(--c-col); }
+.notes {
+  margin-top: 1rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.notes li { margin-left: 1.2rem; margin-bottom: 0.3rem; }
+.winner {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.85rem;
+  border-radius: 3px;
+  border-left: 3px solid var(--teal);
+  background: var(--code-bg);
+  margin-bottom: 1rem;
+}
+.error-msg {
+  color: var(--err);
+  font-size: 0.85rem;
+  margin-top: 0.85rem;
+  padding: 0.65rem;
+  background: var(--code-bg);
+  border-left: 3px solid var(--err);
+  border-radius: 2px;
+}
+.compare-inputs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+footer {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+footer a { color: var(--teal); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+.hidden { display: none; }
+@media (max-width: 640px) {
+  body { padding: 1rem 0.75rem; }
+  h1 { font-size: 1.4rem; }
+  .contrib { grid-template-columns: 1fr; gap: 0.15rem 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>CSS Specificity Calculator</h1>
+    <div class="tag">Score selectors in your browser</div>
+  </div>
+  <button class="theme-btn" id="theme-toggle" type="button">Dark</button>
+</header>
+
+<p class="lede">Type any CSS selector and see its specificity as (a, b, c): IDs, then classes / attributes / pseudo-classes, then elements / pseudo-elements. Get a plain-English breakdown of what each part contributed, or switch to compare mode to see which of two selectors wins a conflict. Nothing leaves this page.</p>
+
+<div class="tabs">
+  <button class="tab active" id="tab-single" type="button">Single selector</button>
+  <button class="tab" id="tab-compare" type="button">Compare two</button>
+</div>
+
+<div id="single-view">
+  <div class="input-box">
+    <label for="sel-input">Selector</label>
+    <input type="text" id="sel-input" placeholder="#nav .item a:hover" spellcheck="false" autocapitalize="off" autocorrect="off">
+    <div class="preset-label">Example presets</div>
+    <div class="presets" id="presets"></div>
+    <div class="privacy-note">All parsing happens locally. Nothing is sent to any server.</div>
+  </div>
+  <div class="results" id="single-results"></div>
+  <div id="single-error"></div>
+</div>
+
+<div id="compare-view" class="hidden">
+  <div class="input-box">
+    <div class="compare-inputs">
+      <div>
+        <label for="sel-a">Selector A</label>
+        <input type="text" id="sel-a" placeholder="#header .nav a" spellcheck="false" autocapitalize="off" autocorrect="off">
+      </div>
+      <div>
+        <label for="sel-b">Selector B</label>
+        <input type="text" id="sel-b" placeholder=".nav .item .link" spellcheck="false" autocapitalize="off" autocorrect="off">
+      </div>
+    </div>
+    <div class="privacy-note">All parsing happens locally. Nothing is sent to any server.</div>
+  </div>
+  <div class="results" id="compare-results"></div>
+  <div id="compare-error"></div>
+</div>
+
+<footer>
+  <div>CSS Specificity Calculator. Open source, MIT licensed. Works offline, no external dependencies.</div>
+  <div><a href="https://elitesystem.ai" target="_blank" rel="noopener">elitesystem.ai</a></div>
+</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+const themeBtn = $("theme-toggle");
+function setTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "dark" ? "Light" : "Dark";
+}
+themeBtn.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  setTheme(cur === "dark" ? "light" : "dark");
+});
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Tokenize a compound/complex selector into meaningful pieces and score it.
+// Returns { a, b, c, contributions: [{token, category, why}], notes: [] }
+// Categories: 'a' (IDs), 'b' (classes/attributes/pseudo-classes), 'c' (elements/pseudo-elements), 'zero'
+function computeSpecificity(selector) {
+  const notes = [];
+  const contributions = [];
+  let a = 0, b = 0, c = 0;
+
+  // Walk character by character so we can handle balanced parentheses in
+  // :not(), :is(), :where(), and attribute brackets [ ].
+  const s = selector.trim();
+  if (!s) throw new Error("Enter a selector.");
+
+  let i = 0;
+  const n = s.length;
+
+  function readBalanced(open, close) {
+    // assumes s[i] === open; returns inner text, advances i past close
+    let depth = 0, start = i;
+    while (i < n) {
+      if (s[i] === open) depth++;
+      else if (s[i] === close) { depth--; if (depth === 0) { i++; break; } }
+      else if (s[i] === '"' || s[i] === "'") { skipString(s[i]); continue; }
+      i++;
+    }
+    return s.slice(start, i);
+  }
+  function skipString(q) {
+    i++;
+    while (i < n && s[i] !== q) { if (s[i] === "\\") i++; i++; }
+    i++;
+  }
+
+  while (i < n) {
+    const ch = s[i];
+
+    // whitespace and combinators contribute nothing
+    if (ch === " " || ch === "\t" || ch === "\n" || ch === "\r") { i++; continue; }
+    if (ch === ">" || ch === "+" || ch === "~") {
+      contributions.push({ token: ch, category: "zero", why: "combinator, adds nothing" });
+      i++;
+      continue;
+    }
+
+    // Universal selector
+    if (ch === "*") {
+      contributions.push({ token: "*", category: "zero", why: "universal selector, adds nothing" });
+      i++;
+      continue;
+    }
+
+    // ID
+    if (ch === "#") {
+      let j = i + 1;
+      while (j < n && /[\w\-\\]/.test(s[j])) j++;
+      const tok = s.slice(i, j);
+      a++;
+      contributions.push({ token: tok, category: "a", why: "ID selector" });
+      i = j;
+      continue;
+    }
+
+    // Class
+    if (ch === ".") {
+      let j = i + 1;
+      while (j < n && /[\w\-\\]/.test(s[j])) j++;
+      const tok = s.slice(i, j);
+      b++;
+      contributions.push({ token: tok, category: "b", why: "class selector" });
+      i = j;
+      continue;
+    }
+
+    // Attribute selector [ ... ]
+    if (ch === "[") {
+      const tok = readBalanced("[", "]");
+      b++;
+      contributions.push({ token: tok, category: "b", why: "attribute selector" });
+      continue;
+    }
+
+    // Pseudo (class or element)
+    if (ch === ":") {
+      const isDouble = s[i + 1] === ":";
+      let start = i;
+      i += isDouble ? 2 : 1;
+      let j = i;
+      while (j < n && /[\w\-]/.test(s[j])) j++;
+      const name = s.slice(i, j).toLowerCase();
+      i = j;
+      let arg = null;
+      if (s[i] === "(") {
+        const raw = readBalanced("(", ")");
+        arg = raw.slice(1, -1); // strip outer parens
+      }
+      const fullToken = s.slice(start, i);
+
+      // Pseudo-elements always count as c, regardless of : or ::
+      const PSEUDO_ELEMENTS = new Set([
+        "before", "after", "first-line", "first-letter", "selection",
+        "placeholder", "marker", "backdrop", "cue", "file-selector-button",
+        "spelling-error", "grammar-error", "target-text"
+      ]);
+
+      if (isDouble || PSEUDO_ELEMENTS.has(name)) {
+        c++;
+        contributions.push({ token: fullToken, category: "c", why: "pseudo-element (counts like an element)" });
+        continue;
+      }
+
+      // Functional pseudo-classes with special rules
+      if (name === "where") {
+        contributions.push({ token: fullToken, category: "zero", why: ":where() always contributes zero specificity" });
+        notes.push(":where() zeroes out whatever is inside it.");
+        continue;
+      }
+      if (name === "is" || name === "not" || name === "has") {
+        // specificity = the max specificity among the comma-separated args
+        const best = maxOfList(arg || "");
+        a += best.a; b += best.b; c += best.c;
+        const label = ":" + name + "() takes the specificity of its most specific argument";
+        contributions.push({
+          token: fullToken,
+          category: best.a ? "a" : best.b ? "b" : best.c ? "c" : "zero",
+          why: label + " (" + best.a + "," + best.b + "," + best.c + ")"
+        });
+        continue;
+      }
+      if (name === "nth-child" || name === "nth-last-child" || name === "nth-of-type" || name === "nth-last-of-type") {
+        // The An+B part adds nothing; an optional "of <selector>" adds the selector's specificity.
+        b++; // the pseudo-class itself
+        let extra = { a: 0, b: 0, c: 0 };
+        const m = /\bof\b([\s\S]+)$/i.exec(arg || "");
+        if (m) { extra = maxOfList(m[1]); a += extra.a; b += extra.b; c += extra.c; }
+        contributions.push({ token: fullToken, category: "b", why: "pseudo-class" + (m ? " plus its 'of' selector" : "") });
+        continue;
+      }
+
+      // Regular pseudo-class (:hover, :focus, :first-child, etc.)
+      b++;
+      contributions.push({ token: fullToken, category: "b", why: "pseudo-class" });
+      continue;
+    }
+
+    // Element / type selector (and namespace prefix a|b)
+    if (/[a-zA-Z]/.test(ch) || ch === "-" || ch === "_" || ch === "\\") {
+      let j = i;
+      while (j < n && /[\w\-\\|]/.test(s[j])) j++;
+      let tok = s.slice(i, j);
+      // strip a namespace prefix if present (ns|div => div is the type)
+      c++;
+      contributions.push({ token: tok, category: "c", why: "type (element) selector" });
+      i = j;
+      continue;
+    }
+
+    // Unknown char, skip defensively
+    i++;
+  }
+
+  return { a, b, c, contributions, notes };
+}
+
+// max specificity across a comma-separated selector list (used by :is/:not/:has and 'of')
+function maxOfList(listText) {
+  const parts = splitTopLevelCommas(listText);
+  let best = { a: -1, b: -1, c: -1 };
+  for (const p of parts) {
+    if (!p.trim()) continue;
+    const r = computeSpecificity(p);
+    if (r.a > best.a || (r.a === best.a && (r.b > best.b || (r.b === best.b && r.c > best.c)))) {
+      best = { a: r.a, b: r.b, c: r.c };
+    }
+  }
+  if (best.a < 0) best = { a: 0, b: 0, c: 0 };
+  return best;
+}
+
+function splitTopLevelCommas(text) {
+  const out = [];
+  let depth = 0, cur = "", q = null;
+  for (let k = 0; k < text.length; k++) {
+    const ch = text[k];
+    if (q) { cur += ch; if (ch === q && text[k-1] !== "\\") q = null; continue; }
+    if (ch === '"' || ch === "'") { q = ch; cur += ch; continue; }
+    if (ch === "(" || ch === "[") depth++;
+    if (ch === ")" || ch === "]") depth--;
+    if (ch === "," && depth === 0) { out.push(cur); cur = ""; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function cmp(x, y) {
+  if (x.a !== y.a) return x.a - y.a;
+  if (x.b !== y.b) return x.b - y.b;
+  return x.c - y.c;
+}
+
+function badge(cat) {
+  if (cat === "a") return '<span class="badge badge-a">a</span>';
+  if (cat === "b") return '<span class="badge badge-b">b</span>';
+  if (cat === "c") return '<span class="badge badge-c">c</span>';
+  return '<span class="badge" style="background:var(--ink-soft)">0</span>';
+}
+
+function renderScoreHtml(r, selector) {
+  let html = '<div class="section-title">Specificity of <code>' + escapeHtml(selector) + '</code></div>';
+  html += '<div class="score">';
+  html += '<div class="score-cell cell-a"><div class="num">' + r.a + '</div><div class="lbl">a: IDs</div></div>';
+  html += '<div class="score-cell cell-b"><div class="num">' + r.b + '</div><div class="lbl">b: classes, attrs, pseudo-classes</div></div>';
+  html += '<div class="score-cell cell-c"><div class="num">' + r.c + '</div><div class="lbl">c: elements, pseudo-elements</div></div>';
+  html += '</div>';
+  html += '<div class="tuple">Specificity: (' + r.a + ', ' + r.b + ', ' + r.c + ')</div>';
+
+  html += '<div class="breakdown"><strong>What contributed</strong><div class="contrib">';
+  for (const ct of r.contributions) {
+    html += '<div class="tok">' + badge(ct.category) + escapeHtml(ct.token) + '</div>';
+    html += '<div class="why">' + escapeHtml(ct.why) + '</div>';
+  }
+  html += '</div></div>';
+
+  const notes = new Set(r.notes);
+  html += '<ul class="notes">';
+  for (const nt of notes) html += '<li>' + escapeHtml(nt) + '</li>';
+  html += '<li>Inline <code>style="..."</code> attributes beat any selector (treated as a fourth, highest column).</li>';
+  html += '<li><code>!important</code> overrides normal specificity entirely; it is not part of the (a, b, c) score.</li>';
+  html += '</ul>';
+  return html;
+}
+
+function runSingle() {
+  const sel = $("sel-input").value;
+  $("single-error").innerHTML = "";
+  const res = $("single-results");
+  if (!sel.trim()) { res.classList.remove("show"); return; }
+  try {
+    // score each comma-separated selector in the list separately (a list has no single specificity)
+    const parts = splitTopLevelCommas(sel).map(p => p.trim()).filter(Boolean);
+    let html = "";
+    for (const p of parts) {
+      const r = computeSpecificity(p);
+      html += '<div class="section">' + renderScoreHtml(r, p) + '</div>';
+    }
+    if (parts.length > 1) {
+      html = '<div class="section"><div class="notes">A selector list (comma-separated) has no single specificity. Each selector is scored on its own below.</div></div>' + html;
+    }
+    res.innerHTML = html;
+    res.classList.add("show");
+  } catch (e) {
+    $("single-error").innerHTML = '<div class="error-msg">' + escapeHtml(e.message) + '</div>';
+    res.classList.remove("show");
+  }
+}
+
+function runCompare() {
+  const sa = $("sel-a").value.trim();
+  const sb = $("sel-b").value.trim();
+  $("compare-error").innerHTML = "";
+  const res = $("compare-results");
+  if (!sa || !sb) { res.classList.remove("show"); return; }
+  try {
+    const ra = computeSpecificity(splitTopLevelCommas(sa)[0]);
+    const rb = computeSpecificity(splitTopLevelCommas(sb)[0]);
+    const d = cmp(ra, rb);
+    let verdict;
+    if (d > 0) verdict = "Selector A wins. (" + ra.a + "," + ra.b + "," + ra.c + ") beats (" + rb.a + "," + rb.b + "," + rb.c + ").";
+    else if (d < 0) verdict = "Selector B wins. (" + rb.a + "," + rb.b + "," + rb.c + ") beats (" + ra.a + "," + ra.b + "," + ra.c + ").";
+    else verdict = "Tie. Both score (" + ra.a + "," + ra.b + "," + ra.c + "). The one that appears later in the stylesheet wins.";
+
+    let why = "";
+    if (d !== 0) {
+      if (ra.a !== rb.a) why = "The IDs column (a) decides it: " + ra.a + " vs " + rb.a + ".";
+      else if (ra.b !== rb.b) why = "IDs tie, so the classes / attributes / pseudo-classes column (b) decides it: " + ra.b + " vs " + rb.b + ".";
+      else why = "a and b tie, so the elements column (c) decides it: " + ra.c + " vs " + rb.c + ".";
+    } else {
+      why = "Every column is equal, so specificity cannot break the tie. Source order does.";
+    }
+
+    let html = '<div class="section">';
+    html += '<div class="winner">' + escapeHtml(verdict) + '</div>';
+    html += '<div class="why" style="font-family:ui-serif,Georgia,serif;font-size:0.9rem;color:var(--ink-soft)">' + escapeHtml(why) + '</div>';
+    html += '</div>';
+    html += '<div class="section">' + renderScoreHtml(ra, sa) + '</div>';
+    html += '<div class="section">' + renderScoreHtml(rb, sb) + '</div>';
+    res.innerHTML = html;
+    res.classList.add("show");
+  } catch (e) {
+    $("compare-error").innerHTML = '<div class="error-msg">' + escapeHtml(e.message) + '</div>';
+    res.classList.remove("show");
+  }
+}
+
+// Presets
+const PRESETS = [
+  "*",
+  "li",
+  "ul li",
+  ".item",
+  "a:hover",
+  "#nav",
+  "#nav .item a",
+  "input[type=\"text\"]",
+  "li::before",
+  ".btn:not(.disabled)",
+  ":is(#a, .b, li)",
+  ":where(#a, .b) .c",
+  "ul li:nth-child(2n of .active)"
+];
+const presetsEl = $("presets");
+for (const p of PRESETS) {
+  const btn = document.createElement("button");
+  btn.className = "preset";
+  btn.type = "button";
+  btn.textContent = p;
+  btn.addEventListener("click", () => { $("sel-input").value = p; runSingle(); $("sel-input").focus(); });
+  presetsEl.appendChild(btn);
+}
+
+// Tabs
+$("tab-single").addEventListener("click", () => {
+  $("tab-single").classList.add("active");
+  $("tab-compare").classList.remove("active");
+  $("single-view").classList.remove("hidden");
+  $("compare-view").classList.add("hidden");
+});
+$("tab-compare").addEventListener("click", () => {
+  $("tab-compare").classList.add("active");
+  $("tab-single").classList.remove("active");
+  $("compare-view").classList.remove("hidden");
+  $("single-view").classList.add("hidden");
+});
+
+$("sel-input").addEventListener("input", runSingle);
+$("sel-a").addEventListener("input", runCompare);
+$("sel-b").addEventListener("input", runCompare);
+
+setTheme("light");
+</script>
+</body>
+</html>
